@@ -10,7 +10,7 @@ class AuthProvider extends ChangeNotifier {
   bool get isAuthenticated => _token != null;
 
   Future<void> login(String email, String password) async {
-    final url = Uri.parse('http://172.20.10.3:3002/api/auth/login');
+    final url = Uri.parse('https://apihotel-nodejs.onrender.com/api/auth/login');
     try {
       final response = await http.post(
         url,
@@ -23,7 +23,8 @@ class AuthProvider extends ChangeNotifier {
         _token = data['token'];
         notifyListeners();
       } else {
-        throw Exception('Credenciales incorrectas');
+        final error = jsonDecode(response.body)['message'];
+        throw Exception(error ?? 'Error durante el inicio de sesión');
       }
     } catch (e) {
       print('Error durante el inicio de sesión: $e');

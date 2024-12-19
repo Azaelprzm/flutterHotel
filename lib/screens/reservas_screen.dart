@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../services/reserva_service.dart';
 import '../services/cliente_service.dart';
 import '../services/hotel_service.dart';
+import '../services/habitacion_service.dart';
 import '../providers/auth_provider.dart';
 
 class ReservasScreen extends StatefulWidget {
@@ -18,6 +19,7 @@ class _ReservasScreenState extends State<ReservasScreen> {
   List<dynamic> reservas = [];
   List<dynamic> clientes = [];
   List<dynamic> hoteles = [];
+  List<dynamic> habitaciones = [];
   bool isLoading = true;
 
   @override
@@ -38,10 +40,14 @@ class _ReservasScreenState extends State<ReservasScreen> {
       final reservasData = await _reservaService.fetchReservas();
       final clientesData = await _clienteService.fetchClientes();
       final hotelesData = await _hotelService.fetchHoteles();
+      final habitacionesData = await HabitacionService(_reservaService.token)
+          .fetchHabitaciones(); // Carga habitaciones
+
       setState(() {
         reservas = reservasData;
         clientes = clientesData;
         hoteles = hotelesData;
+        habitaciones = habitacionesData; // Actualiza la lista de habitaciones
         isLoading = false;
       });
     } catch (e) {
@@ -72,6 +78,9 @@ class _ReservasScreenState extends State<ReservasScreen> {
 
     int? clienteSeleccionado = reserva?['clienteId'];
     int? hotelSeleccionado = reserva?['hotelId'];
+    int? habitacionSeleccionada = reserva?['habitacionId'];
+    String metodoPago = reserva?['metodoPago'] ?? "efectivo";
+    double? pagoInicial = reserva?['pagoInicial'];
 
     await showDialog(
       context: context,
@@ -152,6 +161,53 @@ class _ReservasScreenState extends State<ReservasScreen> {
                         });
                       },
                     ),
+                    DropdownButton<int>(
+                      value: habitacionSeleccionada,
+                      hint: Text('Seleccionar Habitación'),
+                      isExpanded: true,
+                      items: habitaciones.isNotEmpty
+                          ? habitaciones
+                              .map<DropdownMenuItem<int>>((habitacion) {
+                              return DropdownMenuItem<int>(
+                                value: habitacion['id'],
+                                child: Text(
+                                    'Habitación ${habitacion['numero']} (${habitacion['tipo']})'),
+                              );
+                            }).toList()
+                          : null,
+                      onChanged: habitaciones.isNotEmpty
+                          ? (value) {
+                              setState(() {
+                                habitacionSeleccionada = value;
+                              });
+                            }
+                          : null,
+                    ),
+                    TextField(
+                      decoration: InputDecoration(labelText: 'Pago Inicial'),
+                      keyboardType: TextInputType.number,
+                      onChanged: (value) {
+                        setState(() {
+                          pagoInicial = double.tryParse(value) ?? 0.0;
+                        });
+                      },
+                    ),
+                    DropdownButton<String>(
+                      value: metodoPago,
+                      hint: Text('Seleccionar Método de Pago'),
+                      isExpanded: true,
+                      items: ['efectivo', 'tarjeta'].map((metodo) {
+                        return DropdownMenuItem<String>(
+                          value: metodo,
+                          child: Text(metodo.toUpperCase()),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          metodoPago = value!;
+                        });
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -167,7 +223,8 @@ class _ReservasScreenState extends State<ReservasScreen> {
                     if (fechaInicio == null ||
                         fechaFin == null ||
                         clienteSeleccionado == null ||
-                        hotelSeleccionado == null) {
+                        hotelSeleccionado == null ||
+                        habitacionSeleccionada == null) {
                       showSnackbar(
                           'Por favor, complete todos los campos', Colors.red);
                       return;
@@ -178,6 +235,9 @@ class _ReservasScreenState extends State<ReservasScreen> {
                       'fechaFin': fechaFin!.toIso8601String(),
                       'clienteId': clienteSeleccionado,
                       'hotelId': hotelSeleccionado,
+                      'habitacionId': habitacionSeleccionada,
+                      'pagoInicial': pagoInicial,
+                      'metodoPago': metodoPago,
                     };
 
                     Navigator.of(context).pop();
@@ -261,13 +321,16 @@ class _ReservasScreenState extends State<ReservasScreen> {
                 final hotel = hoteles.firstWhere(
                     (h) => h['id'] == reserva['hotelId'],
                     orElse: () => null);
+                final habitacion = habitaciones.firstWhere(
+                    (h) => h['id'] == reserva['habitacionId'],
+                    orElse: () => null);
 
                 return Card(
                   child: ListTile(
                     title: Text(
                         'Reserva: ${reserva['fechaInicio']} - ${reserva['fechaFin']}'),
                     subtitle: Text(
-                        'Cliente: ${cliente?['nombre'] ?? 'N/A'}, Hotel: ${hotel?['nombre'] ?? 'N/A'}'),
+                        'Cliente: ${cliente?['nombre'] ?? 'N/A'}, Hotel: ${hotel?['nombre'] ?? 'N/A'}, Habitación: ${habitacion?['numero'] ?? 'N/A'}, Total: ${reserva['total']}, Adeudo: ${reserva['adeudo']}'),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [

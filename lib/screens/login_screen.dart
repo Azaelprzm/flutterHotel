@@ -40,23 +40,40 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: SingleChildScrollView(
         child: Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.teal.shade700,
+                Colors.teal.shade400,
+              ],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 80.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // Logo o título principal
+              Icon(
+                Icons.hotel,
+                size: 80.0,
+                color: Colors.white,
+              ),
+              SizedBox(height: 20.0),
               Text(
-                'Bienvenido',
+                'Hotel Lux',
                 style: TextStyle(
-                  fontSize: 28.0,
+                  fontSize: 32.0,
                   fontWeight: FontWeight.bold,
-                  color: Colors.blueAccent,
+                  color: Colors.white,
                 ),
               ),
               SizedBox(height: 8.0),
               Text(
-                'Por favor inicia sesión para continuar',
-                style: TextStyle(fontSize: 16.0, color: Colors.grey[600]),
+                'Tu estancia de lujo comienza aquí',
+                style: TextStyle(fontSize: 16.0, color: Colors.white70),
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: 40.0),
@@ -65,13 +82,14 @@ class _LoginScreenState extends State<LoginScreen> {
               TextField(
                 controller: _emailController,
                 decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.email, color: Colors.blueAccent),
+                  prefixIcon: Icon(Icons.email, color: Colors.teal.shade800),
                   labelText: 'Correo Electrónico',
+                  labelStyle: TextStyle(color: const Color.fromRGBO(0, 0, 0, 1)),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.0),
+                    borderRadius: BorderRadius.circular(20.0),
                   ),
                   filled: true,
-                  fillColor: Colors.grey[200],
+                  fillColor: Colors.white,
                 ),
                 keyboardType: TextInputType.emailAddress,
               ),
@@ -81,13 +99,14 @@ class _LoginScreenState extends State<LoginScreen> {
               TextField(
                 controller: _passwordController,
                 decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.lock, color: Colors.blueAccent),
+                  prefixIcon: Icon(Icons.lock, color: Colors.teal.shade800),
                   labelText: 'Contraseña',
+                  labelStyle: TextStyle(color: const Color.fromRGBO(0, 0, 0, 1)),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.0),
+                    borderRadius: BorderRadius.circular(20.0),
                   ),
                   filled: true,
-                  fillColor: Colors.grey[200],
+                  fillColor: Colors.white,
                 ),
                 obscureText: true,
               ),
@@ -95,21 +114,21 @@ class _LoginScreenState extends State<LoginScreen> {
 
               // Botón de inicio de sesión
               _isLoading
-                  ? CircularProgressIndicator()
+                  ? CircularProgressIndicator(color: Colors.white)
                   : SizedBox(
                       width: double.infinity,
                       height: 50.0,
                       child: ElevatedButton(
                         onPressed: _login,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blueAccent,
+                          backgroundColor: Colors.teal.shade800,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10.0),
+                            borderRadius: BorderRadius.circular(20.0),
                           ),
                         ),
                         child: Text(
-                          'Ingresar',
-                          style: TextStyle(fontSize: 18.0),
+                          'Iniciar Sesión',
+                          style: TextStyle(fontSize: 18.0, color: Colors.white),
                         ),
                       ),
                     ),
@@ -123,7 +142,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 },
                 child: Text(
                   '¿Olvidaste tu contraseña?',
-                  style: TextStyle(color: Colors.blueAccent),
+                  style: TextStyle(color: Colors.white70),
                 ),
               ),
             ],

@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ClienteService {
-  final String apiUrl = 'http://172.20.10.3:3002/api/clientes';
+  final String apiUrl = 'https://apihotel-nodejs.onrender.com/api/clientes';
   final String? token;
 
   ClienteService(this.token);
@@ -20,11 +20,10 @@ class ClienteService {
     try {
       final response = await http.get(Uri.parse(apiUrl), headers: getHeaders());
       if (response.statusCode == 200) {
-        List<dynamic> clientes = jsonDecode(response.body);
-        return clientes;
+        return jsonDecode(response.body);
       } else {
         throw Exception(
-            'Error al obtener los clientes: ${response.statusCode} - ${response.body}');
+            jsonDecode(response.body)['message'] ?? 'Error al obtener los clientes');
       }
     } catch (e) {
       throw Exception('Error de conexión al obtener clientes: $e');
@@ -42,7 +41,7 @@ class ClienteService {
 
       if (response.statusCode != 201) {
         throw Exception(
-            'Error al crear el cliente: ${response.statusCode} - ${response.body}');
+            jsonDecode(response.body)['message'] ?? 'Error al crear el cliente');
       }
     } catch (e) {
       throw Exception('Error de conexión al crear cliente: $e');
@@ -60,7 +59,7 @@ class ClienteService {
 
       if (response.statusCode != 200) {
         throw Exception(
-            'Error al actualizar el cliente: ${response.statusCode} - ${response.body}');
+            jsonDecode(response.body)['message'] ?? 'Error al actualizar el cliente');
       }
     } catch (e) {
       throw Exception('Error de conexión al actualizar cliente: $e');
@@ -77,7 +76,7 @@ class ClienteService {
 
       if (response.statusCode != 200) {
         throw Exception(
-            'Error al eliminar el cliente: ${response.statusCode} - ${response.body}');
+            jsonDecode(response.body)['message'] ?? 'Error al eliminar el cliente');
       }
     } catch (e) {
       throw Exception('Error de conexión al eliminar cliente: $e');

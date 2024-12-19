@@ -6,14 +6,14 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Dashboard'),
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: Colors.teal,
       ),
       drawer: Drawer(
         child: ListView(
           children: [
             DrawerHeader(
               decoration: BoxDecoration(
-                color: Colors.blueAccent,
+                color: Colors.teal,
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -36,21 +36,28 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             ListTile(
-              leading: Icon(Icons.hotel),
+              leading: Icon(Icons.hotel, color: Colors.teal),
               title: Text('Hoteles'),
               onTap: () {
                 Navigator.pushNamed(context, '/hoteles');
               },
             ),
             ListTile(
-              leading: Icon(Icons.people),
+              leading: Icon(Icons.meeting_room, color: Colors.teal),
+              title: Text('Habitaciones'),
+              onTap: () {
+                Navigator.pushNamed(context, '/habitaciones');
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.people, color: Colors.teal),
               title: Text('Clientes'),
               onTap: () {
                 Navigator.pushNamed(context, '/clientes');
               },
             ),
             ListTile(
-              leading: Icon(Icons.calendar_month),
+              leading: Icon(Icons.calendar_month, color: Colors.teal),
               title: Text('Reservas'),
               onTap: () {
                 Navigator.pushNamed(context, '/reservas');
@@ -68,9 +75,9 @@ class HomeScreen extends StatelessWidget {
             Text(
               'Bienvenido al sistema de gestión hotelera',
               style: TextStyle(
-                fontSize: 24.0,
+                fontSize: 28.0,
                 fontWeight: FontWeight.bold,
-                color: Colors.blueAccent,
+                color: Colors.teal,
               ),
             ),
             SizedBox(height: 16.0),
@@ -78,42 +85,48 @@ class HomeScreen extends StatelessWidget {
               'Explora las opciones disponibles para administrar hoteles, clientes y reservas.',
               style: TextStyle(fontSize: 16.0, color: Colors.grey[700]),
             ),
-            SizedBox(height: 20.0),
-
+            SizedBox(height: 30.0),
 
             // Accesos directos
             Text(
               'Accesos Rápidos',
               style: TextStyle(
-                fontSize: 18.0,
+                fontSize: 22.0,
                 fontWeight: FontWeight.bold,
-                color: Colors.blueAccent,
+                color: Colors.teal,
               ),
             ),
-            SizedBox(height: 16.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            SizedBox(height: 20.0),
+            GridView.count(
+              crossAxisCount: 2,
+              crossAxisSpacing: 16.0,
+              mainAxisSpacing: 16.0,
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
               children: [
-                // Tarjeta Hoteles
                 _buildShortcutCard(
                   context,
                   icon: Icons.hotel,
                   label: 'Hoteles',
                   route: '/hoteles',
                 ),
-                // Tarjeta Clientes
                 _buildShortcutCard(
                   context,
                   icon: Icons.people,
                   label: 'Clientes',
                   route: '/clientes',
                 ),
-                // Tarjeta Reservas
                 _buildShortcutCard(
                   context,
                   icon: Icons.calendar_month,
                   label: 'Reservas',
                   route: '/reservas',
+                ),
+                _buildShortcutCard(
+                  context,
+                  icon: Icons.meeting_room,
+                  label: 'Habitaciones',
+                  route: '/habitaciones',
                 ),
               ],
             ),
@@ -130,21 +143,30 @@ class HomeScreen extends StatelessWidget {
         Navigator.pushNamed(context, route);
       },
       child: Container(
-        width: 100.0,
-        height: 100.0,
         decoration: BoxDecoration(
-          color: Colors.blueAccent.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12.0),
-          border: Border.all(color: Colors.blueAccent, width: 1.0),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20.0),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              spreadRadius: 2,
+              blurRadius: 5,
+            ),
+          ],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 40.0, color: Colors.blueAccent),
-            SizedBox(height: 8.0),
+            Icon(icon, size: 40.0, color: Colors.teal),
+            SizedBox(height: 12.0),
             Text(
               label,
-              style: TextStyle(fontSize: 14.0, color: Colors.blueAccent),
+              style: TextStyle(
+                fontSize: 16.0,
+                fontWeight: FontWeight.bold,
+                color: Colors.teal,
+              ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),

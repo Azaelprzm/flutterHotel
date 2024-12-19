@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class HotelService {
-  final String apiUrl = 'http://172.20.10.3:3002/api/hoteles';
+  final String apiUrl = 'https://apihotel-nodejs.onrender.com/api/hoteles';
   final String? token;
 
   HotelService(this.token);

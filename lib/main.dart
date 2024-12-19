@@ -6,6 +6,7 @@ import 'screens/home_screen.dart';
 import 'screens/hoteles_screen.dart';
 import 'screens/clientes_screen.dart';
 import 'screens/reservas_screen.dart';
+import 'screens/habitaciones_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -26,6 +27,7 @@ class MyApp extends StatelessWidget {
           '/': (context) => LoginScreen(),
           '/home': (context) => HomeScreen(),
           '/hoteles': (context) => HotelesScreen(),
+          '/habitaciones': (context) => HabitacionesScreen(),
           '/clientes': (context) => ClientesScreen(),
           '/reservas': (context) => ReservasScreen(),
         },
