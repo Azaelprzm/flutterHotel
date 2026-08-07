@@ -1,151 +1,186 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../providers/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isLoading = false;
 
-  void _login() async {
-    setState(() {
-      _isLoading = true;
-    });
+  bool _isLoading = false;
+  bool _hidePassword = true;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _login() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() => _isLoading = true);
 
     try {
-      await Provider.of<AuthProvider>(context, listen: false).login(
-        _emailController.text,
-        _passwordController.text,
-      );
-      Navigator.pushReplacementNamed(context, '/home');
+      await context.read<AuthProvider>().login(
+            _emailController.text,
+            _passwordController.text,
+          );
+      if (!mounted) return;
+      Navigator.pushNamedAndRemoveUntil(context, '/home', (_) => false);
     } catch (error) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.toString())),
+        SnackBar(
+          content: Text(error.toString()),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
       );
-      print('Error en el login: $error');
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Colors.teal.shade700,
-                Colors.teal.shade400,
-              ],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
+      body: Container(
+        width: double.infinity,
+        constraints: const BoxConstraints.expand(),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.teal.shade800, Colors.teal.shade400],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 80.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Logo o título principal
-              Icon(
-                Icons.hotel,
-                size: 80.0,
-                color: Colors.white,
-              ),
-              SizedBox(height: 20.0),
-              Text(
-                'Hotel Lux',
-                style: TextStyle(
-                  fontSize: 32.0,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              SizedBox(height: 8.0),
-              Text(
-                'Tu estancia de lujo comienza aquí',
-                style: TextStyle(fontSize: 16.0, color: Colors.white70),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 40.0),
-
-              // Campo de correo electrónico
-              TextField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.email, color: Colors.teal.shade800),
-                  labelText: 'Correo Electrónico',
-                  labelStyle: TextStyle(color: const Color.fromRGBO(0, 0, 0, 1)),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20.0),
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                ),
-                keyboardType: TextInputType.emailAddress,
-              ),
-              SizedBox(height: 20.0),
-
-              // Campo de contraseña
-              TextField(
-                controller: _passwordController,
-                decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.lock, color: Colors.teal.shade800),
-                  labelText: 'Contraseña',
-                  labelStyle: TextStyle(color: const Color.fromRGBO(0, 0, 0, 1)),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20.0),
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                ),
-                obscureText: true,
-              ),
-              SizedBox(height: 30.0),
-
-              // Botón de inicio de sesión
-              _isLoading
-                  ? CircularProgressIndicator(color: Colors.white)
-                  : SizedBox(
-                      width: double.infinity,
-                      height: 50.0,
-                      child: ElevatedButton(
-                        onPressed: _login,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.teal.shade800,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20.0),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440),
+                child: Card(
+                  elevation: 8,
+                  child: Padding(
+                    padding: const EdgeInsets.all(28),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.hotel,
+                            size: 72,
+                            color: Colors.teal.shade700,
                           ),
-                        ),
-                        child: Text(
-                          'Iniciar Sesión',
-                          style: TextStyle(fontSize: 18.0, color: Colors.white),
-                        ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Hotel Lux',
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Sistema de gestión hotelera',
+                            style: Theme.of(context).textTheme.bodyLarge,
+                          ),
+                          const SizedBox(height: 32),
+                          TextFormField(
+                            controller: _emailController,
+                            decoration: const InputDecoration(
+                              prefixIcon: Icon(Icons.email_outlined),
+                              labelText: 'Correo electrónico',
+                            ),
+                            keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.next,
+                            autofillHints: const [AutofillHints.email],
+                            validator: (value) {
+                              final email = value?.trim() ?? '';
+                              if (email.isEmpty) {
+                                return 'Ingresa tu correo electrónico';
+                              }
+                              if (!email.contains('@')) {
+                                return 'Ingresa un correo válido';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _passwordController,
+                            decoration: InputDecoration(
+                              prefixIcon: const Icon(Icons.lock_outline),
+                              labelText: 'Contraseña',
+                              suffixIcon: IconButton(
+                                tooltip: _hidePassword
+                                    ? 'Mostrar contraseña'
+                                    : 'Ocultar contraseña',
+                                onPressed: () {
+                                  setState(
+                                      () => _hidePassword = !_hidePassword);
+                                },
+                                icon: Icon(
+                                  _hidePassword
+                                      ? Icons.visibility_outlined
+                                      : Icons.visibility_off_outlined,
+                                ),
+                              ),
+                            ),
+                            obscureText: _hidePassword,
+                            textInputAction: TextInputAction.done,
+                            autofillHints: const [AutofillHints.password],
+                            onFieldSubmitted: (_) =>
+                                _isLoading ? null : _login(),
+                            validator: (value) =>
+                                (value == null || value.isEmpty)
+                                    ? 'Ingresa tu contraseña'
+                                    : null,
+                          ),
+                          const SizedBox(height: 24),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 50,
+                            child: FilledButton.icon(
+                              onPressed: _isLoading ? null : _login,
+                              icon: _isLoading
+                                  ? const SizedBox.square(
+                                      dimension: 20,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2),
+                                    )
+                                  : const Icon(Icons.login),
+                              label: Text(
+                                _isLoading
+                                    ? 'Iniciando sesión…'
+                                    : 'Iniciar sesión',
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-
-              SizedBox(height: 20.0),
-
-              // Enlace para recuperar contraseña
-              TextButton(
-                onPressed: () {
-                  // Acción para recuperar contraseña
-                },
-                child: Text(
-                  '¿Olvidaste tu contraseña?',
-                  style: TextStyle(color: Colors.white70),
+                  ),
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),

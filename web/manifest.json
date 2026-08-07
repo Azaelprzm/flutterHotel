@@ -1,11 +1,11 @@
 {
-    "name": "movil_hotel",
-    "short_name": "movil_hotel",
+    "name": "Hotel Lux - Gestión Hotelera",
+    "short_name": "Hotel Lux",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#00695C",
+    "theme_color": "#00695C",
+    "description": "Aplicación para administrar hoteles, habitaciones, clientes y reservas.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

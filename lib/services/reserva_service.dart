@@ -1,85 +1,29 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'api_client.dart';
+import 'api_exception.dart';
 
 class ReservaService {
-  final String apiUrl = 'https://apihotel-nodejs.onrender.com/api/reservas'; 
-  final String? token;
+  ReservaService(String token) : _apiClient = ApiClient(token: token);
 
-  ReservaService(this.token);
+  final ApiClient _apiClient;
 
-  // Encabezados con el token de autorización
-  Map<String, String> getHeaders() {
-    return {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    };
-  }
-
-  // Obtener todas las reservas
   Future<List<dynamic>> fetchReservas() async {
-    try {
-      final response = await http.get(Uri.parse(apiUrl), headers: getHeaders());
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body); // Devuelve una lista de reservas
-      } else {
-        throw Exception(
-            'Error al obtener las reservas: ${response.statusCode} - ${response.body}');
-      }
-    } catch (e) {
-      throw Exception('Error de conexión al obtener reservas: $e');
+    final response = await _apiClient.get('/reservas');
+    if (response is List<dynamic>) {
+      return response;
     }
+    throw const ApiException(
+        'La lista de reservas no tiene un formato válido.');
   }
 
-  // Crear una nueva reserva
   Future<void> createReserva(Map<String, dynamic> reservaData) async {
-    try {
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: getHeaders(),
-        body: jsonEncode(reservaData),
-      );
-
-      if (response.statusCode != 201) {
-        throw Exception(
-            'Error al crear la reserva: ${response.statusCode} - ${response.body}');
-      }
-    } catch (e) {
-      throw Exception('Error de conexión al crear reserva: $e');
-    }
+    await _apiClient.post('/reservas', body: reservaData);
   }
 
-  // Actualizar una reserva
   Future<void> updateReserva(int id, Map<String, dynamic> reservaData) async {
-    try {
-      final response = await http.put(
-        Uri.parse('$apiUrl/$id'),
-        headers: getHeaders(),
-        body: jsonEncode(reservaData),
-      );
-
-      if (response.statusCode != 200) {
-        throw Exception(
-            'Error al actualizar la reserva: ${response.statusCode} - ${response.body}');
-      }
-    } catch (e) {
-      throw Exception('Error de conexión al actualizar reserva: $e');
-    }
+    await _apiClient.put('/reservas/$id', body: reservaData);
   }
 
-  // Eliminar una reserva
   Future<void> deleteReserva(int id) async {
-    try {
-      final response = await http.delete(
-        Uri.parse('$apiUrl/$id'),
-        headers: getHeaders(),
-      );
-
-      if (response.statusCode != 200) {
-        throw Exception(
-            'Error al eliminar la reserva: ${response.statusCode} - ${response.body}');
-      }
-    } catch (e) {
-      throw Exception('Error de conexión al eliminar reserva: $e');
-    }
+    await _apiClient.delete('/reservas/$id');
   }
 }
