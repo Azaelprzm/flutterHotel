@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "movil_hotel" "\0"
+            VALUE "CompanyName", "Azaelprzm" "\0"
+            VALUE "FileDescription", "Hotel Lux" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "movil_hotel" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2024 com.example. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2024 Azaelprzm. All rights reserved." "\0"
             VALUE "OriginalFilename", "movil_hotel.exe" "\0"
-            VALUE "ProductName", "movil_hotel" "\0"
+            VALUE "ProductName", "Hotel Lux" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

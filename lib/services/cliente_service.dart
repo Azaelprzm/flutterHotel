@@ -1,85 +1,32 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'api_client.dart';
+import 'api_exception.dart';
 
 class ClienteService {
-  final String apiUrl = 'https://apihotel-nodejs.onrender.com/api/clientes';
-  final String? token;
+  ClienteService(String token) : _apiClient = ApiClient(token: token);
 
-  ClienteService(this.token);
+  final ApiClient _apiClient;
 
-  // Encabezados con el token de autorización
-  Map<String, String> getHeaders() {
-    return {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    };
-  }
-
-  // Obtener todos los clientes
   Future<List<dynamic>> fetchClientes() async {
-    try {
-      final response = await http.get(Uri.parse(apiUrl), headers: getHeaders());
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else {
-        throw Exception(
-            jsonDecode(response.body)['message'] ?? 'Error al obtener los clientes');
-      }
-    } catch (e) {
-      throw Exception('Error de conexión al obtener clientes: $e');
+    final response = await _apiClient.get('/clientes');
+    if (response is List<dynamic>) {
+      return response;
     }
+    throw const ApiException(
+        'La lista de clientes no tiene un formato válido.');
   }
 
-  // Crear un nuevo cliente
   Future<void> createCliente(Map<String, dynamic> clienteData) async {
-    try {
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: getHeaders(),
-        body: jsonEncode(clienteData),
-      );
-
-      if (response.statusCode != 201) {
-        throw Exception(
-            jsonDecode(response.body)['message'] ?? 'Error al crear el cliente');
-      }
-    } catch (e) {
-      throw Exception('Error de conexión al crear cliente: $e');
-    }
+    await _apiClient.post('/clientes', body: clienteData);
   }
 
-  // Actualizar un cliente
-  Future<void> updateCliente(int id, Map<String, dynamic> clienteData) async {
-    try {
-      final response = await http.put(
-        Uri.parse('$apiUrl/$id'),
-        headers: getHeaders(),
-        body: jsonEncode(clienteData),
-      );
-
-      if (response.statusCode != 200) {
-        throw Exception(
-            jsonDecode(response.body)['message'] ?? 'Error al actualizar el cliente');
-      }
-    } catch (e) {
-      throw Exception('Error de conexión al actualizar cliente: $e');
-    }
+  Future<void> updateCliente(
+    int id,
+    Map<String, dynamic> clienteData,
+  ) async {
+    await _apiClient.put('/clientes/$id', body: clienteData);
   }
 
-  // Eliminar un cliente
   Future<void> deleteCliente(int id) async {
-    try {
-      final response = await http.delete(
-        Uri.parse('$apiUrl/$id'),
-        headers: getHeaders(),
-      );
-
-      if (response.statusCode != 200) {
-        throw Exception(
-            jsonDecode(response.body)['message'] ?? 'Error al eliminar el cliente');
-      }
-    } catch (e) {
-      throw Exception('Error de conexión al eliminar cliente: $e');
-    }
+    await _apiClient.delete('/clientes/$id');
   }
 }

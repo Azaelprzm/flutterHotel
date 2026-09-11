@@ -1,176 +1,253 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/auth_provider.dart';
 
 class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
+  static const _sections = [
+    _DashboardSection(
+      icon: Icons.hotel_outlined,
+      label: 'Hoteles',
+      description: 'Administra las propiedades registradas',
+      route: '/hoteles',
+    ),
+    _DashboardSection(
+      icon: Icons.meeting_room_outlined,
+      label: 'Habitaciones',
+      description: 'Consulta disponibilidad y tarifas',
+      route: '/habitaciones',
+    ),
+    _DashboardSection(
+      icon: Icons.people_outline,
+      label: 'Clientes',
+      description: 'Gestiona la información de huéspedes',
+      route: '/clientes',
+    ),
+    _DashboardSection(
+      icon: Icons.calendar_month_outlined,
+      label: 'Reservas',
+      description: 'Crea y administra reservaciones',
+      route: '/reservas',
+    ),
+  ];
+
+  Future<void> _logout(BuildContext context) async {
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Cerrar sesión'),
+        content: const Text('¿Deseas cerrar la sesión actual?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Cerrar sesión'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldLogout != true || !context.mounted) return;
+    await context.read<AuthProvider>().logout();
+    if (!context.mounted) return;
+    Navigator.pushNamedAndRemoveUntil(context, '/', (_) => false);
+  }
+
+  void _openSection(BuildContext context, String route) {
+    Navigator.pop(context);
+    Navigator.pushNamed(context, route);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Dashboard'),
-        backgroundColor: Colors.teal,
+        title: const Text('Gestión hotelera'),
+        actions: [
+          IconButton(
+            tooltip: 'Cerrar sesión',
+            onPressed: () => _logout(context),
+            icon: const Icon(Icons.logout),
+          ),
+        ],
       ),
       drawer: Drawer(
-        child: ListView(
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.teal,
+        child: SafeArea(
+          child: Column(
+            children: [
+              const _DrawerHeader(),
+              Expanded(
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    for (final section in _sections)
+                      ListTile(
+                        leading: Icon(section.icon),
+                        title: Text(section.label),
+                        onTap: () => _openSection(context, section.route),
+                      ),
+                  ],
+                ),
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.hotel,
-                    color: Colors.white,
-                    size: 50.0,
+              const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.logout),
+                title: const Text('Cerrar sesión'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _logout(context);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final columns = constraints.maxWidth >= 900
+                ? 4
+                : constraints.maxWidth >= 560
+                    ? 2
+                    : 1;
+
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1100),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Bienvenido',
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Selecciona una sección para administrar el hotel.',
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
+                      const SizedBox(height: 28),
+                      GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: columns,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: columns == 1 ? 2.4 : 1.15,
+                        ),
+                        itemCount: _sections.length,
+                        itemBuilder: (context, index) {
+                          final section = _sections[index];
+                          return _SectionCard(section: section);
+                        },
+                      ),
+                    ],
                   ),
-                  SizedBox(height: 10),
-                  Text(
-                    'Gestión Hotelera',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20.0,
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _DrawerHeader extends StatelessWidget {
+  const _DrawerHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      color: Theme.of(context).colorScheme.primaryContainer,
+      child: Column(
+        children: [
+          Icon(
+            Icons.hotel,
+            size: 52,
+            color: Theme.of(context).colorScheme.onPrimaryContainer,
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Hotel Lux',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionCard extends StatelessWidget {
+  const _SectionCard({required this.section});
+
+  final _DashboardSection section;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => Navigator.pushNamed(context, section.route),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                section.icon,
+                size: 44,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                section.label,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
-                  ),
-                ],
               ),
-            ),
-            ListTile(
-              leading: Icon(Icons.hotel, color: Colors.teal),
-              title: Text('Hoteles'),
-              onTap: () {
-                Navigator.pushNamed(context, '/hoteles');
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.meeting_room, color: Colors.teal),
-              title: Text('Habitaciones'),
-              onTap: () {
-                Navigator.pushNamed(context, '/habitaciones');
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.people, color: Colors.teal),
-              title: Text('Clientes'),
-              onTap: () {
-                Navigator.pushNamed(context, '/clientes');
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.calendar_month, color: Colors.teal),
-              title: Text('Reservas'),
-              onTap: () {
-                Navigator.pushNamed(context, '/reservas');
-              },
-            ),
-          ],
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Mensaje de bienvenida
-            Text(
-              'Bienvenido al sistema de gestión hotelera',
-              style: TextStyle(
-                fontSize: 28.0,
-                fontWeight: FontWeight.bold,
-                color: Colors.teal,
+              const SizedBox(height: 6),
+              Text(
+                section.description,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-            ),
-            SizedBox(height: 16.0),
-            Text(
-              'Explora las opciones disponibles para administrar hoteles, clientes y reservas.',
-              style: TextStyle(fontSize: 16.0, color: Colors.grey[700]),
-            ),
-            SizedBox(height: 30.0),
-
-            // Accesos directos
-            Text(
-              'Accesos Rápidos',
-              style: TextStyle(
-                fontSize: 22.0,
-                fontWeight: FontWeight.bold,
-                color: Colors.teal,
-              ),
-            ),
-            SizedBox(height: 20.0),
-            GridView.count(
-              crossAxisCount: 2,
-              crossAxisSpacing: 16.0,
-              mainAxisSpacing: 16.0,
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              children: [
-                _buildShortcutCard(
-                  context,
-                  icon: Icons.hotel,
-                  label: 'Hoteles',
-                  route: '/hoteles',
-                ),
-                _buildShortcutCard(
-                  context,
-                  icon: Icons.people,
-                  label: 'Clientes',
-                  route: '/clientes',
-                ),
-                _buildShortcutCard(
-                  context,
-                  icon: Icons.calendar_month,
-                  label: 'Reservas',
-                  route: '/reservas',
-                ),
-                _buildShortcutCard(
-                  context,
-                  icon: Icons.meeting_room,
-                  label: 'Habitaciones',
-                  route: '/habitaciones',
-                ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildShortcutCard(BuildContext context,
-      {required IconData icon, required String label, required String route}) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.pushNamed(context, route);
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20.0),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
-              spreadRadius: 2,
-              blurRadius: 5,
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 40.0, color: Colors.teal),
-            SizedBox(height: 12.0),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 16.0,
-                fontWeight: FontWeight.bold,
-                color: Colors.teal,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+class _DashboardSection {
+  const _DashboardSection({
+    required this.icon,
+    required this.label,
+    required this.description,
+    required this.route,
+  });
+
+  final IconData icon;
+  final String label;
+  final String description;
+  final String route;
 }
